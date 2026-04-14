@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Test Guardia Civil</title>
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="App móvil para practicar test de Guardia Civil por temas, aleatorio y repaso de fallos." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#111827;
+      --panel-2:#182133;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --accent:#38bdf8;
+      --accent-2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --border:#25324a;
+      --chip:#0f1a2e;
+      --shadow:0 10px 30px rgba(0,0,0,.28);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#08101c,#0b1220 35%,#0c1424);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    body{min-height:100svh}
+    .app{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#38bdf8,#2563eb);display:grid;place-items:center;font-weight:800;color:white;box-shadow:var(--shadow)}
+    .title h1{font-size:1.2rem;margin:0}
+    .title p{margin:2px 0 0;color:var(--muted);font-size:.92rem}
+    .ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .card{background:linear-gradient(180deg,rgba(24,33,51,.98),rgba(16,24,38,.98));border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .section{margin-top:14px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{padding:10px 12px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--text);font-size:.92rem;cursor:pointer;user-select:none}
+    .chip.active{background:linear-gradient(135deg,#123150,#173b6d);border-color:#2f6cb8;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+    .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .segmented button,.btn{appearance:none;border:none;border-radius:16px;padding:14px 16px;font-size:1rem;font-weight:700;cursor:pointer}
+    .segmented button{background:#0c1729;color:var(--text);border:1px solid var(--border)}
+    .segmented button.active{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:white}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:8px;flex:1;min-width:160px}
+    label{font-size:.93rem;color:var(--muted)}
+    input[type="number"]{width:100%;background:#09101c;color:var(--text);border:1px solid var(--border);border-radius:14px;padding:14px;font-size:1rem}
+    .btn{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:white;box-shadow:var(--shadow)}
+    .btn.secondary{background:#0c1729;border:1px solid var(--border)}
+    .btn.success{background:linear-gradient(135deg,#22c55e,#16a34a)}
+    .btn.warn{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .btn.danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    .hint{color:var(--muted);font-size:.92rem;line-height:1.4}
+    .hidden{display:none !important}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .stat{background:#0c1729;border:1px solid var(--border);padding:12px;border-radius:16px;text-align:center}
+    .stat b{display:block;font-size:1.2rem;margin-bottom:4px}
+    .progress-wrap{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+    .progress{height:10px;background:#0a1322;border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+    .progress > div{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);width:0%}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#0d1a2d;border:1px solid var(--border);padding:8px 10px;border-radius:999px;color:var(--muted);font-size:.85rem}
+    .question-card h2{font-size:1.18rem;line-height:1.35;margin:8px 0 0}
+    .meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+    .options{display:grid;gap:10px;margin-top:16px}
+    .option{width:100%;text-align:left;background:#0b1526;border:1px solid var(--border);color:var(--text);padding:15px 14px;border-radius:18px;font-size:1rem;line-height:1.35;display:flex;gap:12px;align-items:flex-start}
+    .option .letter{min-width:30px;height:30px;border-radius:999px;background:#122035;display:grid;place-items:center;font-weight:800}
+    .option.correct{border-color:#1faa59;background:rgba(34,197,94,.12)}
+    .option.wrong{border-color:#ef4444;background:rgba(239,68,68,.12)}
+    .feedback{margin-top:14px;padding:12px 14px;border-radius:16px;font-weight:600}
+    .feedback.good{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.35)}
+    .feedback.bad{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.35)}
+    .bottom-actions{position:sticky;bottom:12px;margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .list{display:grid;gap:10px}
+    .review-item{background:#0c1729;border:1px solid var(--border);padding:12px;border-radius:16px}
+    .small{font-size:.88rem;color:var(--muted)}
+    .footer-note{margin-top:12px;color:var(--muted);font-size:.85rem;text-align:center}
+    @media (max-width:560px){
+      .app{padding:12px 12px 34px}
+      .stats{grid-template-columns:1fr 1fr 1fr}
+      .segmented{grid-template-columns:1fr}
+      .bottom-actions{grid-template-columns:1fr}
+      .title h1{font-size:1.08rem}
+      .question-card h2{font-size:1.08rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">GC</div>
+        <div class="title">
+          <h1>Test Guardia Civil</h1>
+          <p>Modo móvil • offline • repaso de fallos</p>
+        </div>
+      </div>
+      <button class="chip" id="installBtn" hidden>Instalar</button>
+    </div>
+
+    <section id="setupScreen" class="card">
+      <div class="stats">
+        <div class="stat"><b id="totalQuestions">0</b><span class="small">preguntas</span></div>
+        <div class="stat"><b id="totalThemes">0</b><span class="small">temas</span></div>
+        <div class="stat"><b id="mistakeCount">0</b><span class="small">fallos guardados</span></div>
+      </div>
+
+      <div class="section">
+        <div class="row" style="justify-content:space-between">
+          <label>Selecciona temas</label>
+          <div class="row">
+            <button class="chip" id="selectAllThemes">Todos</button>
+            <button class="chip" id="clearThemes">Ninguno</button>
+          </div>
+        </div>
+        <div class="chips" id="themeChips"></div>
+      </div>
+
+      <div class="section">
+        <label>Modo</label>
+        <div class="segmented" id="modeSelect">
+          <button data-mode="exam" class="active">Examen</button>
+          <button data-mode="random">Aleatorio</button>
+          <button data-mode="mistakes">Fallos</button>
+        </div>
+        <p class="hint" id="modeHint">Recorre las preguntas elegidas en orden y muestra el resultado al final.</p>
+      </div>
+
+      <div class="section row">
+        <div class="field">
+          <label for="questionCount">Número de preguntas</label>
+          <input id="questionCount" type="number" min="1" step="1" />
+        </div>
+      </div>
+
+      <div class="section row">
+        <button class="btn" id="startBtn">Empezar test</button>
+        <button class="btn secondary" id="startMistakesBtn">Repasar fallos</button>
+      </div>
+
+      <p class="footer-note">Consejo: si lo publicas en GitHub Pages o Netlify, podrás añadirlo a la pantalla de inicio como una app.</p>
+    </section>
+
+    <section id="quizScreen" class="hidden">
+      <div class="card question-card">
+        <div class="progress-wrap">
+          <div class="pill" id="progressText">Pregunta 1/10</div>
+          <div class="pill" id="scoreLive">0 aciertos</div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="meta-line" style="margin-top:12px">
+          <span class="pill" id="themeBadge"></span>
+          <span class="pill" id="questionBadge"></span>
+        </div>
+        <h2 id="questionText"></h2>
+        <div class="options" id="optionsList"></div>
+        <div id="feedbackBox" class="feedback hidden"></div>
+      </div>
+
+      <div class="bottom-actions">
+        <button class="btn secondary" id="bookmarkBtn">Marcar para repasar</button>
+        <button class="btn success" id="nextBtn" disabled>Siguiente</button>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="hidden card">
+      <h2 style="margin-top:0">Resultado</h2>
+      <div class="stats">
+        <div class="stat"><b id="finalScore">0/0</b><span class="small">aciertos</span></div>
+        <div class="stat"><b id="finalPercent">0%</b><span class="small">porcentaje</span></div>
+        <div class="stat"><b id="finalMistakes">0</b><span class="small">errores</span></div>
+      </div>
+      <div class="section row">
+        <button class="btn" id="retryWrongBtn">Repetir fallos</button>
+        <button class="btn secondary" id="backHomeBtn">Volver al inicio</button>
+      </div>
+      <div class="section">
+        <label>Preguntas falladas</label>
+        <div id="wrongList" class="list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Test Guardia Civil",
+  "short_name": "Test GC",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0f172a",
+  "description": "App móvil para practicar test de Guardia Civil por temas y repasar fallos.",
+  "icons": []
+}
