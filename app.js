@@ -18,6 +18,8 @@
     questionCount: document.getElementById('questionCount'),
     startBtn: document.getElementById('startBtn'),
     startMistakesBtn: document.getElementById('startMistakesBtn'),
+    examHistory: document.getElementById('examHistory'),
+    clearHistoryBtn: document.getElementById('clearHistoryBtn'),
     progressText: document.getElementById('progressText'),
     scoreLive: document.getElementById('scoreLive'),
     progressBar: document.getElementById('progressBar'),
@@ -38,10 +40,28 @@
   };
 
   const STORAGE_KEYS = {
+    deviceId: 'gcQuizDeviceId',
     mistakes: 'gcQuizMistakes',
     bookmarks: 'gcQuizBookmarks',
-    stats: 'gcQuizStats'
+    stats: 'gcQuizStats',
+    examHistory: 'gcQuizExamHistory'
   };
+
+  const generateDeviceId = () => {
+    const randomPart = Math.random().toString(36).slice(2, 10);
+    return `device-${Date.now().toString(36)}-${randomPart}`;
+  };
+
+  const getDeviceId = () => {
+    const existing = localStorage.getItem(STORAGE_KEYS.deviceId);
+    if (existing) return existing;
+    const created = generateDeviceId();
+    localStorage.setItem(STORAGE_KEYS.deviceId, created);
+    return created;
+  };
+
+  const deviceId = getDeviceId();
+  const scopedKey = (key) => `${key}:${deviceId}`;
 
   let deferredPrompt = null;
   let selectedThemes = new Set(meta.themes.map(t => t.id));
@@ -57,10 +77,10 @@
     return copy;
   };
 
-  const saveJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const saveJSON = (key, value) => localStorage.setItem(scopedKey(key), JSON.stringify(value));
   const loadJSON = (key, fallback) => {
     try {
-      const raw = localStorage.getItem(key);
+      const raw = localStorage.getItem(scopedKey(key));
       return raw ? JSON.parse(raw) : fallback;
     } catch {
       return fallback;
@@ -72,11 +92,57 @@
   const getBookmarks = () => loadJSON(STORAGE_KEYS.bookmarks, []);
   const setBookmarks = (ids) => saveJSON(STORAGE_KEYS.bookmarks, Array.from(new Set(ids)));
   const getStats = () => loadJSON(STORAGE_KEYS.stats, { played: 0, correct: 0, wrong: 0 });
+  const getExamHistory = () => loadJSON(STORAGE_KEYS.examHistory, []);
+  const setExamHistory = (history) => saveJSON(STORAGE_KEYS.examHistory, history.slice(0, 30));
 
   function updateTopStats() {
     els.totalQuestions.textContent = meta.totalQuestions;
     els.totalThemes.textContent = meta.themes.length;
     els.mistakeCount.textContent = getMistakes().length;
+    renderExamHistory();
+  }
+
+
+  function modeLabel(value) {
+    const labels = {
+      exam: 'Examen',
+      random: 'Aleatorio',
+      mistakes: 'Fallos'
+    };
+    return labels[value] || value;
+  }
+
+  function explainAnswer(item, selectedLetter, isCorrect) {
+    if (item.explanation) return item.explanation;
+    const correctText = item.options[item.correct] || 'No disponible';
+    const selectedText = item.options[selectedLetter] || 'No disponible';
+    if (isCorrect) {
+      return `La opción ${item.correct} es la adecuada porque coincide con el enunciado: ${correctText}`;
+    }
+    return `La opción ${item.correct} es correcta porque ${correctText}. Tu elección (${selectedLetter}: ${selectedText}) no encaja con lo que pide la pregunta.`;
+  }
+
+  function renderExamHistory() {
+    if (!els.examHistory) return;
+    const history = getExamHistory();
+    els.examHistory.innerHTML = '';
+    if (!history.length) {
+      const empty = document.createElement('div');
+      empty.className = 'review-item small';
+      empty.textContent = 'Aún no has hecho exámenes en este móvil.';
+      els.examHistory.appendChild(empty);
+      return;
+    }
+
+    history.slice(0, 5).forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML = `
+        <div><strong>${entry.dateText}</strong></div>
+        <div class="small" style="margin-top:6px">Modo: ${modeLabel(entry.mode)} · Resultado: ${entry.correct}/${entry.total} (${entry.percent}%) · Fallos: ${entry.wrong}</div>
+      `;
+      els.examHistory.appendChild(div);
+    });
   }
 
   function renderThemeChips() {
@@ -226,10 +292,11 @@
       node.disabled = true;
     });
 
+    const explanation = explainAnswer(item, letter, isCorrect);
     els.feedbackBox.className = 'feedback ' + (isCorrect ? 'good' : 'bad');
-    els.feedbackBox.textContent = isCorrect
-      ? `Correcta. Respuesta: ${item.correct}.`
-      : `Incorrecta. La correcta es ${item.correct}.`;
+    els.feedbackBox.innerHTML = isCorrect
+      ? `Correcta. Respuesta: ${item.correct}.<span class="feedback-expl">${explanation}</span>`
+      : `Incorrecta. La correcta es ${item.correct}.<span class="feedback-expl">${explanation}</span>`;
     els.nextBtn.disabled = false;
     els.scoreLive.textContent = `${session.correct} aciertos`;
     updateTopStats();
@@ -254,6 +321,19 @@
     els.finalPercent.textContent = `${percent}%`;
     els.finalMistakes.textContent = wrong;
     els.wrongList.innerHTML = '';
+
+    const history = getExamHistory();
+    const now = new Date();
+    history.unshift({
+      at: now.toISOString(),
+      dateText: now.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }),
+      mode,
+      total,
+      correct: session.correct,
+      wrong,
+      percent
+    });
+    setExamHistory(history);
 
     const wrongItems = session.items.filter(item => session.wrongIds.includes(item.id));
     if (!wrongItems.length) {
@@ -338,6 +418,10 @@
   els.retryWrongBtn.onclick = () => startQuiz(true);
   els.backHomeBtn.onclick = () => show(els.setupScreen);
   els.bookmarkBtn.onclick = toggleBookmark;
+  els.clearHistoryBtn.onclick = () => {
+    localStorage.removeItem(scopedKey(STORAGE_KEYS.examHistory));
+    renderExamHistory();
+  };
 
   renderThemeChips();
   updateTopStats();
