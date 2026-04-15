@@ -70,6 +70,7 @@
     .feedback{margin-top:14px;padding:12px 14px;border-radius:16px;font-weight:600}
     .feedback.good{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.35)}
     .feedback.bad{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.35)}
+    .feedback-expl{display:block;margin-top:8px;font-weight:500;color:var(--text);opacity:.95;line-height:1.4}
     .bottom-actions{position:sticky;bottom:12px;margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .list{display:grid;gap:10px}
     .review-item{background:#0c1729;border:1px solid var(--border);padding:12px;border-radius:16px}
@@ -136,6 +137,14 @@
       <div class="section row">
         <button class="btn" id="startBtn">Empezar test</button>
         <button class="btn secondary" id="startMistakesBtn">Repasar fallos</button>
+      </div>
+
+      <div class="section">
+        <div class="row" style="justify-content:space-between">
+          <label>Historial en este móvil</label>
+          <button class="chip" id="clearHistoryBtn">Borrar historial</button>
+        </div>
+        <div id="examHistory" class="list"></div>
       </div>
 
       <p class="footer-note">Consejo: si lo publicas en GitHub Pages o Netlify, podrás añadirlo a la pantalla de inicio como una app.</p>
